@@ -53,6 +53,26 @@ Open `/admin` and register the first administrator. Strapi ships no default
 credentials, but the registration form is open until somebody claims it — so
 register immediately after the first deploy.
 
+## Content types
+
+Strapi disables the Content-Type Builder whenever `NODE_ENV=production`, because
+adding a type writes files to disk and needs a restart. That is upstream's design,
+not a limitation of this deployment: content types are code, authored in
+development and shipped through git.
+
+```bash
+git clone https://github.com/gridalpha/strapi-railway && cd strapi-railway
+npm install && npm run develop      # SQLite, Content-Type Builder available
+# build your types in the admin, then
+git add src/api && git commit -m "add content types" && git push
+```
+
+Railway rebuilds on push and the new types appear in the Content Manager.
+
+An example `Article` collection type ships in `src/api/article` so a fresh
+deployment has something to edit on arrival. Delete that directory when you no
+longer want it.
+
 ## Scaling
 
 Ships at one replica. Strapi runs cron jobs in-process with no leader election, so

@@ -24,12 +24,19 @@ module.exports = ({ env }) => {
     },
     postgres: {
       connection: {
-        connectionString: env('DATABASE_URL'),
-        host: env('DATABASE_HOST', 'localhost'),
-        port: env.int('DATABASE_PORT', 5432),
-        database: env('DATABASE_NAME', 'strapi'),
-        user: env('DATABASE_USERNAME', 'strapi'),
-        password: env('DATABASE_PASSWORD', 'strapi'),
+        // DATABASE_URL and the discrete keys are mutually exclusive on purpose.
+        // node-postgres merges a parsed connection string *over* explicit keys,
+        // so supplying both silently ignores half of what is set and misreports
+        // the database name in Strapi's own startup banner.
+        ...(env('DATABASE_URL')
+          ? { connectionString: env('DATABASE_URL') }
+          : {
+              host: env('DATABASE_HOST', 'localhost'),
+              port: env.int('DATABASE_PORT', 5432),
+              database: env('DATABASE_NAME', 'strapi'),
+              user: env('DATABASE_USERNAME', 'strapi'),
+              password: env('DATABASE_PASSWORD', 'strapi'),
+            }),
         // Railway's private network is internal, so TLS is off by default.
         // An external Postgres usually needs DATABASE_SSL=true.
         ssl: env.bool('DATABASE_SSL', false) && {
